@@ -276,6 +276,7 @@ class QueryProcessor:
 
     def __init__(self, indexing_model):
         self.indexing_model = indexing_model
+        self.prefix_trie: Trie = Trie()
 
     def get_word_docs(self, word):
         t = self.indexing_model.get_token(word)
