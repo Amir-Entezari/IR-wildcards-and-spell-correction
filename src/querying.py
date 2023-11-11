@@ -299,6 +299,46 @@ class QueryProcessor:
         else:
             raise Exception("You should first create posting list")
 
+    def edit_distance(self, word1: str, word2: str):
+        """
+        this function will calculate the distance of between two word. The distance means the total number of operation
+        that we need to convert each word to other
+        :param word1: str
+            first word you want to calculate distance of with another
+        :param word2:
+            second word you want to calculate distance of with another
+        :return:
+            the edit distance of between word1 and word2
+        """
+        dp = [[0 for j in range(len(word2))] for i in range(len(word1))]
+        for i in range(1, len(word1)):
+            dp[i][0] = i
+        for j in range(1, len(word2)):
+            dp[0][j] = j
+        for i in range(1, len(word1)):
+            for j in range(1, len(word2)):
+                dp[i][j] = min(dp[i - 1][j - 1] + (0 if word1[i] == word2[j] else 1),
+                               dp[i - 1][j] + 1,
+                               dp[i][j - 1] + 1)
+        return dp[-1][-1]
+
+    def spell_correction(self, word):
+        """
+        this function will return the nearest word from posting_list to a given word which is might be incorrect.
+        :param word:
+            the word you want to return correction of it from posting list
+        :return:
+            index of the nearest token from posting list to the given word
+        """
+        nearest_idx = 0
+        nearest_val = self.edit_distance(self.indexing_model.posting_list[nearest_idx].word, word)
+        for idx in range(len(self.indexing_model.posting_list)):
+            temp_dist = self.edit_distance(self.indexing_model.posting_list[idx].word, word)
+            if temp_dist < nearest_val:
+                nearest_idx = idx
+                nearest_val = temp_dist
+        return nearest_idx
+
     def intersect(self, first_word, second_word):
         docs1 = self.get_word_docs(first_word)
         docs2 = self.get_word_docs(second_word)
