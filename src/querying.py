@@ -365,7 +365,6 @@ class QueryProcessor:
 
     def search(self, query):
         query_parts = query.lower().split()
-
         if len(query_parts) > 2:
             if '*' not in query_parts[0]:
                 query_parts[0] = [query_parts[0]]
@@ -375,7 +374,6 @@ class QueryProcessor:
                 query_parts[0] = self.wildcard_query(query_parts[0] + '$')
             if '*' in query_parts[2]:
                 query_parts[2] = self.wildcard_query(query_parts[1] + '$')
-
         if len(query_parts) == 1:
             if '*' in query_parts[0]:
                 query_parts[0] = self.wildcard_query(query_parts[0] + '$')
@@ -398,7 +396,7 @@ class QueryProcessor:
                     result = result.union(self.union(token1, token2))
             return result
         elif 'not' in query_parts:
-            if '8' in query_parts[0]:
+            if '*' in query_parts[0]:
                 query_parts[1] = self.wildcard_query(query_parts[1] + '$')
             else:
                 query_parts[1] = [query_parts[1]]
