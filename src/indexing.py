@@ -89,7 +89,6 @@ class InvertedIndex:
         self.stop_words: set = set(nltk.corpus.stopwords.words('english') + list(string.punctuation))
         self.case_sensitive = case_sensitive
 
-
     def add_document(self, doc_idx, doc):
         for token_idx, token in enumerate(doc):
             if len(self.posting_list) == 0:
@@ -160,13 +159,8 @@ class InvertedIndex:
         """
         p = self.get_token_index(token)
         if p == -1:
-            null_token = Token('token')
-            null_token.docs = []
-            return null_token
+            p = self.spell_correction(token)
         return self.posting_list[p]
-
-
-
 
 
 nltk.download('punkt')
