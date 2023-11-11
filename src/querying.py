@@ -1,3 +1,6 @@
+from src.utils import get_all_permutations
+
+
 class TrieNode:
     """
     This class is the main class of nodes that are used in Trie class
@@ -211,7 +214,6 @@ class Trie(object):
         return sorted(result)
 
 
-
 class QueryProcessor:
     """
     In this class, I implement an information retrieval system which can search a query among documents.
@@ -271,6 +273,7 @@ class QueryProcessor:
                 :return
                     print list of indexes of documents in a pretty way.
     """
+
     def __init__(self, indexing_model):
         self.indexing_model = indexing_model
 
@@ -280,6 +283,21 @@ class QueryProcessor:
         for doc in t.docs:
             result.add(doc['doc_idx'])
         return result
+
+    def create_prefix_trie(self):
+        """
+        This functions should run after create_posting_list to add all words to prefix_trie to create it.
+        :return:
+            None
+        """
+        if self.indexing_model.posting_list:
+            for token in self.indexing_model.posting_list:
+                # Add permuterms
+                permuterms = get_all_permutations(token.word + '$')
+                for term in permuterms:
+                    node = self.prefix_trie.insert(term)
+        else:
+            raise Exception("You should first create posting list")
 
     def intersect(self, first_word, second_word):
         docs1 = self.get_word_docs(first_word)
