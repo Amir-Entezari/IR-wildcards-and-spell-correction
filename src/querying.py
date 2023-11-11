@@ -337,22 +337,20 @@ class QueryProcessor:
         else:
             raise Exception("Query is not valid")
 
-
-
     def intersect(self, first_word, second_word):
         docs1 = self.get_word_docs(first_word)
         docs2 = self.get_word_docs(second_word)
-        return list(docs1 & docs2)
+        return set(docs1 & docs2)
 
     def union(self, first_word, second_word):
         docs1 = self.get_word_docs(first_word)
         docs2 = self.get_word_docs(second_word)
-        return list(docs1 | docs2)
+        return set(docs1 | docs2)
 
     def not_in(self, word):
         all_docs = set(range(len(self.indexing_model.documents)))
         word_docs = self.get_word_docs(word)
-        return list(all_docs - word_docs)
+        return set(all_docs - word_docs)
 
     def near(self, first_word, second_word, distance):
         result = set()
@@ -363,7 +361,7 @@ class QueryProcessor:
                 for idx in doc['indexes']:
                     if second_word in self.indexing_model.documents[doc["doc_idx"]][idx + 1:idx + 1 + distance]:
                         result.add(doc['doc_idx'])
-        return list(result)
+        return set(result)
 
     def search(self, query):
         query_parts = query.lower().split()
@@ -388,13 +386,32 @@ class QueryProcessor:
                 result = result.union(self.get_word_docs(token1))
             return result
         elif 'and' in query_parts:
-            return self.intersect(query_parts[0], query_parts[2])
+            result = set()
+            for token1 in query_parts[0]:
+                for token2 in query_parts[2]:
+                    result = result.union(self.intersect(token1, token2))
+            return result
         elif 'or' in query_parts:
-            return self.union(query_parts[0], query_parts[2])
+            result = set()
+            for token1 in query_parts[0]:
+                for token2 in query_parts[2]:
+                    result = result.union(self.union(token1, token2))
+            return result
         elif 'not' in query_parts:
-            return self.not_in(query_parts[1])
+            if '8' in query_parts[0]:
+                query_parts[1] = self.wildcard_query(query_parts[1] + '$')
+            else:
+                query_parts[1] = [query_parts[1]]
+            result = self.not_in(query_parts[1][0])
+            for token1 in query_parts[1]:
+                result = result.intersection(self.not_in(token1))
+            return result
         elif 'near' in query:
             distance = int(query_parts[1].split('/')[1])
+            result = set()
+            for token1 in query_parts[0]:
+                for token2 in query_parts[2]:
+                    result = result.union(self.near(token1, token2, distance=distance))
             return self.near(query_parts[0], query_parts[2], distance)
         else:
             return list(self.get_word_docs(query_parts[0]))
