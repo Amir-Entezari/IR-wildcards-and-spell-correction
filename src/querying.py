@@ -299,6 +299,43 @@ class QueryProcessor:
         else:
             raise Exception("You should first create posting list")
 
+    def wildcard_query(self, token: str):
+        """
+        This function gets a token that contain * and return matched word.
+        If there is just one *, it will add a '$' at the end of the word, and then permutate it such that the * pose on
+        the end of the string, and then search it in prefix_trie and will return the all match tokens.
+        If there are two *, it convert two * and the characters between these two into one *. Then do the same thing for
+        having one *. And from resulted matched, it search if they have the sequence characters of between two * in the
+        input token.
+        :param token:
+            the token that has * and you wants to get all matches.
+        :return:
+            return all matches
+        """
+        if token.count('*') == 1:
+            star_idx = token.index('*')
+            result_tokens = self.prefix_trie.query(token[star_idx + 1:] + token[0:star_idx])
+            for i, word in enumerate(result_tokens):
+                dollar_idx = word.index('$')
+                result_tokens[i] = word[dollar_idx + 1:] + word[0:dollar_idx]
+            return result_tokens
+
+        elif token.count('*') == 2:
+            star1_idx = token.index('*')
+            star2_idx = token.index('*', star1_idx + 1)
+            result_tokens = self.prefix_trie.query(token[star2_idx + 1:] + token[0:star1_idx])
+            for i, word in enumerate(result_tokens):
+                dollar_idx = word.index('$')
+                result_tokens[i] = word[dollar_idx + 1:] + word[0:dollar_idx]
+            # print(result_tokens)
+            result = []
+            for word in result_tokens:
+                if token[star1_idx + 1:star2_idx] in word:
+                    result.append(word)
+            return result
+        else:
+            raise Exception("Query is not valid")
+
     def edit_distance(self, word1: str, word2: str):
         """
         this function will calculate the distance of between two word. The distance means the total number of operation
@@ -367,7 +404,27 @@ class QueryProcessor:
 
     def search(self, query):
         query_parts = query.lower().split()
-        if 'and' in query_parts:
+
+        if len(query_parts) > 2:
+            if '*' not in query_parts[0]:
+                query_parts[0] = [query_parts[0]]
+            if '*' not in query_parts[2]:
+                query_parts[2] = [query_parts[2]]
+            if '*' in query_parts[0]:
+                query_parts[0] = self.wildcard_query(query_parts[0] + '$')
+            if '*' in query_parts[2]:
+                query_parts[2] = self.wildcard_query(query_parts[1] + '$')
+
+        if len(query_parts) == 1:
+            if '*' in query_parts[0]:
+                query_parts[0] = self.wildcard_query(query_parts[0] + '$')
+            else:
+                query_parts[0] = [query_parts[0]]
+            result = self.get_word_docs(query_parts[0][0])
+            for token1 in query_parts[0]:
+                result = result.union(self.get_word_docs(token1))
+            return result
+        elif 'and' in query_parts:
             return self.intersect(query_parts[0], query_parts[2])
         elif 'or' in query_parts:
             return self.union(query_parts[0], query_parts[2])
