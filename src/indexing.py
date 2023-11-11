@@ -2,6 +2,8 @@ import nltk
 import string
 from typing import List
 
+from src.utils import edit_distance
+
 
 class Token:
     def __init__(self, word: str):
@@ -125,6 +127,23 @@ class InvertedIndex:
         """
         for doc_idx, doc in enumerate(self.documents):
             self.add_document(doc_idx=doc_idx, doc=doc)
+
+    def spell_correction(self, word):
+        """
+        this function will return the nearest word from posting_list to a given word which is might be incorrect.
+        :param word:
+            the word you want to return correction of it from posting list
+        :return:
+            index of the nearest token from posting list to the given word
+        """
+        nearest_idx = 0
+        nearest_val = edit_distance(self.posting_list[nearest_idx].word, word)
+        for idx in range(len(self.posting_list)):
+            temp_dist = edit_distance(self.posting_list[idx].word, word)
+            if temp_dist < nearest_val:
+                nearest_idx = idx
+                nearest_val = temp_dist
+        return nearest_idx
 
     def get_token_index(self, x):
         """
