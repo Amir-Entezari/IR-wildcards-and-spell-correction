@@ -14,11 +14,11 @@ To get started with the project, follow these steps:
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/your-repo-name.git
+    git clone https://github.com/Amir-Entezari/IR-wildcards-and-spell-correction.git
     ```
 2. Navigate to the project directory:
     ```sh
-    cd your-repo-name
+    cd IR-wildcards-and-spell-correction
     ```
 3. Create a virtual environment (optional but recommended):
     ```sh
@@ -42,30 +42,6 @@ The Information Retrieval Project is designed to demonstrate the core functional
     - `experiments.ipynb`: Notebook for running experiments on the IR system.
     - `report.ipynb`: Notebook for generating reports on the IR system's performance.
 
-## Usage
-1. **Preprocessing Data**:
-    ```python
-    from src.preprocessing import preprocess
-    data = "Your raw text data here"
-    cleaned_data = preprocess(data)
-    ```
-
-2. **Indexing Documents**:
-    ```python
-    from src.indexing import create_index
-    documents = ["doc1", "doc2", "doc3"]
-    index = create_index(documents)
-    ```
-
-3. **Handling Queries**:
-    ```python
-    from src.querying import query_index
-    query = "your search query"
-    results = query_index(query, index)
-    ```
-
-4. **Running Notebooks**:
-    Open the notebooks in the `notebooks` directory using Jupyter Notebook to explore experiments and reports.
 
 ## Contributing
 Contributions are welcome! Please create a pull request or open an issue to discuss any changes.
